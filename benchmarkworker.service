@@ -1,0 +1,19 @@
+[Unit]
+Description=.NET Mapping Benchmarks Worker Service
+After=network.target
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/dotnet /opt/benchmarkworker/DotnetMappingBenchmarks.dll
+WorkingDirectory=/opt/benchmarkworker
+Restart=always
+RestartSec=10
+SyslogIdentifier=benchmarkworker
+User=www-data
+Group=www-data
+Environment=DOTNET_ENVIRONMENT=Production
+Environment=TZ=Europe/Madrid
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
