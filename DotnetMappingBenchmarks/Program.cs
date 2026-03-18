@@ -9,9 +9,9 @@ var builder = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ILibraryBenchmark, MapperlyBenchmark>();
         services.AddSingleton<ILibraryBenchmark, MapsterBenchmark>();
         services.AddSingleton<ILibraryBenchmark, TinyMapperBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, ManualLinqMapperBenchmark>();
         services.AddSingleton<ILibraryBenchmark, AgileMapperBenchmark>();
         services.AddSingleton<ILibraryBenchmark, ManualLinqMapperBenchmark>();
+        services.AddSingleton<ILibraryBenchmark, ManualMapperBenchmark>();
         services.AddSingleton<BenchmarkRunnerService>();
         services.AddSingleton<JsonWriterService>();
         services.AddHostedService<Worker>();
