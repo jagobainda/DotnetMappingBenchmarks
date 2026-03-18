@@ -1,0 +1,45 @@
+# Folders
+.vs/
+.vscode/
+bin/
+obj/
+packages/
+.idea/
+
+# Files
+*.user
+*.suo
+*.sln.docstates
+*.userprefs
+*.dll
+*.exe
+*.pdb
+*.log
+*.suo
+*.csproj.user
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets
+*.nuget.props
+.DS_Store
+Thumbs.db
+
+# NuGet
+.nuget/
+.NuGet.Config
+packages.config
+package-lock.json
+
+# Test Results
+TestResults/
+.trx
+*.trx
+
+# Local environment files
+.env
+.env.local
+appsettings.local.json
+
+# IDE specific
+.editorconfig
+.vs/
+.vscode/
