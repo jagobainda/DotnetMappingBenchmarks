@@ -21,6 +21,9 @@ public class BenchmarkCaseResult
 
     [JsonPropertyName("stddev_us")]
     public double StddevUs { get; set; }
+
+    [JsonPropertyName("alloc_bytes")]
+    public long AllocBytes { get; set; }
 }
 
 public class LibraryBenchmarkResult

@@ -16,18 +16,22 @@ public abstract class BenchmarkBase : ILibraryBenchmark
         for (int i = 0; i < WarmupIterations; i++) action();
 
         var timings = new double[MeasureIterations];
+        var allocations = new long[MeasureIterations];
+
         for (int i = 0; i < MeasureIterations; i++)
         {
             var sw = Stopwatch.StartNew();
+            var beforeAlloc = GC.GetAllocatedBytesForCurrentThread();
             action();
             sw.Stop();
             timings[i] = sw.Elapsed.TotalMicroseconds;
+            allocations[i] = GC.GetAllocatedBytesForCurrentThread() - beforeAlloc;
         }
 
-        return ComputeStats(name, timings);
+        return ComputeStats(name, timings, allocations);
     }
 
-    private static BenchmarkCaseResult ComputeStats(string name, double[] timings)
+    private static BenchmarkCaseResult ComputeStats(string name, double[] timings, long[] allocations)
     {
         Array.Sort(timings);
         var mean = timings.Average();
@@ -37,6 +41,9 @@ public abstract class BenchmarkBase : ILibraryBenchmark
         var variance = timings.Select(t => Math.Pow(t - mean, 2)).Average();
         var stddev = Math.Sqrt(variance);
 
+        var sortedAlloc = allocations.OrderBy(a => a).ToArray();
+        var medianAlloc = (sortedAlloc[49] + sortedAlloc[50]) / 2;
+
         return new BenchmarkCaseResult
         {
             Name = name,
@@ -44,7 +51,8 @@ public abstract class BenchmarkBase : ILibraryBenchmark
             MedianUs = Math.Round(median, 2),
             P95Us = Math.Round(p95, 2),
             P99Us = Math.Round(p99, 2),
-            StddevUs = Math.Round(stddev, 2)
+            StddevUs = Math.Round(stddev, 2),
+            AllocBytes = medianAlloc
         };
     }
 

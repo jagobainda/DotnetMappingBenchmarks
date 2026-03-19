@@ -130,7 +130,8 @@ public class JsonWriterService
                     MedianUs = Math.Round(caseRuns.Average(c => c.MedianUs), 2),
                     P95Us = Math.Round(caseRuns.Average(c => c.P95Us), 2),
                     P99Us = Math.Round(caseRuns.Average(c => c.P99Us), 2),
-                    StddevUs = Math.Round(caseRuns.Average(c => c.StddevUs), 2)
+                    StddevUs = Math.Round(caseRuns.Average(c => c.StddevUs), 2),
+                    AllocBytes = (long)Math.Round(caseRuns.Average(c => c.AllocBytes))
                 });
             }
 
