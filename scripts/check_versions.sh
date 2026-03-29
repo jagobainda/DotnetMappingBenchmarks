@@ -63,7 +63,6 @@ for package in "${PACKAGES[@]}"; do
         log "OK: ${package} is up to date (${current_version})"
     else
         log "UPDATE: ${package} ${current_version} -> ${latest_version}"
-        project_dir=$(dirname "${CSPROJ_PATH}")
         dotnet add "${CSPROJ_PATH}" package "${package}" --version "${latest_version}" >> "${LOG_FILE}" 2>&1
         if [ $? -eq 0 ]; then
             log "SUCCESS: Updated ${package} to ${latest_version}"
@@ -75,10 +74,20 @@ for package in "${PACKAGES[@]}"; do
 done
 
 if [ "${needs_update}" = true ]; then
-    log "Building project to verify updates..."
+    log "Cleaning project (bin/obj)..."
     project_dir=$(dirname "${CSPROJ_PATH}")
-    if dotnet build "${CSPROJ_PATH}" --configuration Release >> "${LOG_FILE}" 2>&1; then
+    rm -rf "${project_dir}/bin" "${project_dir}/obj"
+
+    log "Restoring packages (no cache)..."
+    dotnet restore "${CSPROJ_PATH}" --no-cache >> "${LOG_FILE}" 2>&1
+
+    log "Building project to verify updates..."
+    if dotnet build "${CSPROJ_PATH}" --configuration Release --no-restore >> "${LOG_FILE}" 2>&1; then
         log "SUCCESS: Build succeeded after package updates"
+
+        log "Resolved package versions:"
+        dotnet list "${CSPROJ_PATH}" package >> "${LOG_FILE}" 2>&1
+
         log "Restarting ${SERVICE_NAME} service..."
         if systemctl restart "${SERVICE_NAME}" >> "${LOG_FILE}" 2>&1; then
             log "SUCCESS: Service ${SERVICE_NAME} restarted"
