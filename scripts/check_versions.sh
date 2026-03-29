@@ -5,6 +5,7 @@ LOG_DIR="/var/log/benchmarkworker"
 LOG_FILE="${LOG_DIR}/version_check.log"
 CSPROJ_PATH="$(cd "$(dirname "$0")/.." && pwd)/DotnetMappingBenchmarks/DotnetMappingBenchmarks.csproj"
 SERVICE_NAME="benchmarkworker"
+PUBLISH_DIR="/opt/benchmarkworker"
 
 mkdir -p "${LOG_DIR}"
 
@@ -74,16 +75,17 @@ for package in "${PACKAGES[@]}"; do
 done
 
 if [ "${needs_update}" = true ]; then
-    log "Cleaning project (bin/obj)..."
     project_dir=$(dirname "${CSPROJ_PATH}")
+
+    log "Cleaning project (bin/obj)..."
     rm -rf "${project_dir}/bin" "${project_dir}/obj"
 
     log "Restoring packages (no cache)..."
     dotnet restore "${CSPROJ_PATH}" --no-cache >> "${LOG_FILE}" 2>&1
 
-    log "Building project to verify updates..."
-    if dotnet build "${CSPROJ_PATH}" --configuration Release --no-restore >> "${LOG_FILE}" 2>&1; then
-        log "SUCCESS: Build succeeded after package updates"
+    log "Publishing project to ${PUBLISH_DIR}..."
+    if dotnet publish "${CSPROJ_PATH}" -c Release -o "${PUBLISH_DIR}" --no-restore >> "${LOG_FILE}" 2>&1; then
+        log "SUCCESS: Publish succeeded"
 
         log "Resolved package versions:"
         dotnet list "${CSPROJ_PATH}" package >> "${LOG_FILE}" 2>&1
@@ -95,7 +97,7 @@ if [ "${needs_update}" = true ]; then
             log "ERROR: Failed to restart ${SERVICE_NAME} service"
         fi
     else
-        log "ERROR: Build failed after package updates. Manual intervention required."
+        log "ERROR: Publish failed. Manual intervention required."
         exit 1
     fi
 else
