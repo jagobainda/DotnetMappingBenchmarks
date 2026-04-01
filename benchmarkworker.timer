@@ -4,7 +4,7 @@ Requires=benchmarkworker.service
 
 [Timer]
 OnBootSec=2min
-OnUnitInactiveSec=5min
+OnUnitInactiveSec=1h
 
 [Install]
 WantedBy=timers.target
