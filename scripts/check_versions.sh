@@ -4,8 +4,8 @@ set -euo pipefail
 LOG_DIR="/var/log/benchmarkworker"
 LOG_FILE="${LOG_DIR}/version_check.log"
 CSPROJ_PATH="$(cd "$(dirname "$0")/.." && pwd)/DotnetMappingBenchmarks/DotnetMappingBenchmarks.csproj"
-SERVICE_NAME="benchmarkworker"
-PUBLISH_DIR="/opt/benchmarkworker"
+PUBLISH_DIR="/opt/DotnetMappingBenchmarks/publish"
+SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 mkdir -p "${LOG_DIR}"
 
@@ -92,10 +92,10 @@ if [ "${needs_update}" = true ]; then
         dotnet list "${CSPROJ_PATH}" package >> "${LOG_FILE}" 2>&1
 
         log "Triggering a benchmark run after update..."
-        if systemctl start "${SERVICE_NAME}" >> "${LOG_FILE}" 2>&1; then
-            log "SUCCESS: Service ${SERVICE_NAME} started"
+        if bash "${SCRIPTS_DIR}/run_benchmarks.sh"; then
+            log "SUCCESS: Benchmark run triggered after update"
         else
-            log "ERROR: Failed to start ${SERVICE_NAME} service"
+            log "ERROR: Benchmark run failed after update"
         fi
     else
         log "ERROR: Publish failed. Manual intervention required."

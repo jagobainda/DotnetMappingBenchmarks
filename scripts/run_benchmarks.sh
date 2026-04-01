@@ -3,7 +3,7 @@ set -euo pipefail
 
 LOG_DIR="/var/log/benchmarkworker"
 LOG_FILE="${LOG_DIR}/benchmarkworker.log"
-WORKDIR="/opt/benchmarkworker"
+WORKDIR="/opt/DotnetMappingBenchmarks/publish"
 DOTNET_BIN="/usr/bin/dotnet"
 DLL="${WORKDIR}/DotnetMappingBenchmarks.dll"
 
