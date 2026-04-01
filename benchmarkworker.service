@@ -1,19 +1,18 @@
 [Unit]
-Description=.NET Mapping Benchmarks Worker Service
+Description=.NET Mapping Benchmarks (single run)
 After=network.target
 
 [Service]
-Type=simple
+Type=oneshot
 ExecStart=/usr/bin/dotnet /opt/benchmarkworker/DotnetMappingBenchmarks.dll
 WorkingDirectory=/opt/benchmarkworker
-Restart=always
-RestartSec=10
 SyslogIdentifier=benchmarkworker
 User=ubuntu
 Group=ubuntu
 Environment=DOTNET_ENVIRONMENT=Production
 Environment=TZ=Europe/Madrid
-TimeoutStopSec=30
+TimeoutStartSec=3600
+TimeoutStopSec=120
 
 [Install]
 WantedBy=multi-user.target

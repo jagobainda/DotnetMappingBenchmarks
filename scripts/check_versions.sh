@@ -32,10 +32,11 @@ get_csproj_version() {
 
 PACKAGES=(
     "AutoMapper"
+    "AgileObjects.AgileMapper"
+    "BenchmarkDotNet"
     "Mapster"
     "Riok.Mapperly"
     "TinyMapper"
-    "Microsoft.Extensions.Hosting"
 )
 
 log "=== Starting version check ==="
@@ -90,11 +91,11 @@ if [ "${needs_update}" = true ]; then
         log "Resolved package versions:"
         dotnet list "${CSPROJ_PATH}" package >> "${LOG_FILE}" 2>&1
 
-        log "Restarting ${SERVICE_NAME} service..."
-        if systemctl restart "${SERVICE_NAME}" >> "${LOG_FILE}" 2>&1; then
-            log "SUCCESS: Service ${SERVICE_NAME} restarted"
+        log "Triggering a benchmark run after update..."
+        if systemctl start "${SERVICE_NAME}" >> "${LOG_FILE}" 2>&1; then
+            log "SUCCESS: Service ${SERVICE_NAME} started"
         else
-            log "ERROR: Failed to restart ${SERVICE_NAME} service"
+            log "ERROR: Failed to start ${SERVICE_NAME} service"
         fi
     else
         log "ERROR: Publish failed. Manual intervention required."

@@ -4,43 +4,18 @@ using System.Text.Json;
 
 namespace DotnetMappingBenchmarks.Services;
 
-public class JsonWriterService
+public class JsonWriterService(string outputDir)
 {
-    private readonly string _outputDir;
-    private readonly ILogger<JsonWriterService> _logger;
-
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true
     };
 
-    public JsonWriterService(IConfiguration config, IHostEnvironment hostEnvironment, ILogger<JsonWriterService> logger)
-    {
-        _outputDir = ResolveOutputDirectory(config, hostEnvironment);
-        _logger = logger;
-        Directory.CreateDirectory(_outputDir);
-    }
-
-    private static string ResolveOutputDirectory(IConfiguration config, IHostEnvironment hostEnvironment)
-    {
-        if (hostEnvironment.IsDevelopment())
-        {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DotnetMappingBenchmarks");
-        }
-
-        if (hostEnvironment.IsProduction())
-        {
-            return "/var/www/cdn/dotnet-mapping-benchmarks/";
-        }
-
-        return config.GetValue<string>("BenchmarkSettings:OutputDirectory") ?? "/var/www/cdn/dotnet-mapping-benchmarks/";
-    }
-
     public async Task WriteResultsAsync(BenchmarkRunResult result)
     {
-        var historyPath = Path.Combine(_outputDir, "history.json");
-        var lastResultPath = Path.Combine(_outputDir, "last_result.json");
-        var avgResultPath = Path.Combine(_outputDir, "avg_results.json");
+        var historyPath = Path.Combine(outputDir, "history.json");
+        var lastResultPath = Path.Combine(outputDir, "last_result.json");
+        var avgResultPath = Path.Combine(outputDir, "avg_results.json");
 
         var history = await ReadHistoryAsync(historyPath);
 
@@ -50,17 +25,17 @@ public class JsonWriterService
         history.RemoveAll(r => r.RunAt < cutoff);
 
         await WriteJsonFileAsync(historyPath, history);
-        _logger.LogInformation("Written history.json with {Count} entries", history.Count);
+        Console.WriteLine($"Written history.json with {history.Count} entries");
 
         await WriteJsonFileAsync(lastResultPath, result);
-        _logger.LogInformation("Written last_result.json");
+        Console.WriteLine("Written last_result.json");
 
         var avg = ComputeAverage(history);
         await WriteJsonFileAsync(avgResultPath, avg);
-        _logger.LogInformation("Written avg_results.json (averaged over {Count} runs)", history.Count);
+        Console.WriteLine($"Written avg_results.json (averaged over {history.Count} runs)");
     }
 
-    private async Task<List<BenchmarkRunResult>> ReadHistoryAsync(string path)
+    private static async Task<List<BenchmarkRunResult>> ReadHistoryAsync(string path)
     {
         if (!File.Exists(path)) return [];
 
@@ -71,7 +46,7 @@ public class JsonWriterService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to read history.json, starting fresh");
+            Console.WriteLine($"Warning: Failed to read history.json, starting fresh. {ex.Message}");
             return [];
         }
     }

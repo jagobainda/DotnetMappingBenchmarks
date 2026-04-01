@@ -1,21 +1,38 @@
-﻿using DotnetMappingBenchmarks;
+﻿using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Validators;
 using DotnetMappingBenchmarks.Benchmarks;
 using DotnetMappingBenchmarks.Services;
 
-var builder = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((context, services) =>
-    {
-        services.AddSingleton<ILibraryBenchmark, AutoMapperBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, MapperlyBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, MapsterBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, TinyMapperBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, AgileMapperBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, ManualLinqMapperBenchmark>();
-        services.AddSingleton<ILibraryBenchmark, ManualMapperBenchmark>();
-        services.AddSingleton<BenchmarkRunnerService>();
-        services.AddSingleton<JsonWriterService>();
-        services.AddHostedService<Worker>();
-    });
+var config = DefaultConfig.Instance
+    .AddExporter(HtmlExporter.Default)
+    .AddExporter(MarkdownExporter.GitHub)
+    .AddValidator(JitOptimizationsValidator.FailOnError);
 
-var host = builder.Build();
-host.Run();
+var summaries = new[]
+{
+    BenchmarkRunner.Run<SimpleFlatBenchmark>(config, args),
+    BenchmarkRunner.Run<NestedObjectBenchmark>(config, args),
+    BenchmarkRunner.Run<CollectionBenchmark>(config, args),
+    BenchmarkRunner.Run<NameDifferenceBenchmark>(config, args)
+};
+
+if (summaries.All(s => !s.HasCriticalValidationErrors && s.Reports.Length > 0))
+{
+    var result = BenchmarkResultTransformer.Transform(summaries);
+    var outputDir = ResolveOutputDir();
+    Directory.CreateDirectory(outputDir);
+    var writer = new JsonWriterService(outputDir);
+    await writer.WriteResultsAsync(result);
+}
+
+static string ResolveOutputDir()
+{
+    var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+    if (env.Equals("Development", StringComparison.OrdinalIgnoreCase))
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DotnetMappingBenchmarks");
+
+    return Environment.GetEnvironmentVariable("BENCHMARK_OUTPUT_DIR") ?? "/var/www/cdn/dotnet-mapping-benchmarks/";
+}
+
