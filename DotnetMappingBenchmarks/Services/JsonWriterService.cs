@@ -1,7 +1,6 @@
 using DotnetMappingBenchmarks.Helpers;
 using DotnetMappingBenchmarks.Models;
 using System.Text.Json;
-using Microsoft.Extensions.Hosting;
 
 namespace DotnetMappingBenchmarks.Services;
 
@@ -56,10 +55,9 @@ public class JsonWriterService
         await WriteJsonFileAsync(lastResultPath, result);
         _logger.LogInformation("Written last_result.json");
 
-        var lastN = history.Count > 50 ? history.GetRange(history.Count - 50, 50) : history;
-        var avg = ComputeAverage(lastN);
+        var avg = ComputeAverage(history);
         await WriteJsonFileAsync(avgResultPath, avg);
-        _logger.LogInformation("Written avg_results.json (averaged over {Count} runs)", lastN.Count);
+        _logger.LogInformation("Written avg_results.json (averaged over {Count} runs)", history.Count);
     }
 
     private async Task<List<BenchmarkRunResult>> ReadHistoryAsync(string path)
