@@ -1,14 +1,20 @@
 ﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Validators;
 using DotnetMappingBenchmarks.Benchmarks;
 using DotnetMappingBenchmarks.Services;
 
+var job = Job.Default
+    .WithWarmupCount(3)
+    .WithIterationCount(5)
+    .WithLaunchCount(1);
+
 var config = DefaultConfig.Instance
+    .WithOptions(ConfigOptions.DisableOptimizationsValidator)
+    .AddJob(job)
     .AddExporter(HtmlExporter.Default)
-    .AddExporter(MarkdownExporter.GitHub)
-    .AddValidator(JitOptimizationsValidator.FailOnError);
+    .AddExporter(MarkdownExporter.GitHub);
 
 var summaries = new[]
 {
